@@ -141,6 +141,7 @@ components:
             properties:
                 id:
                   type: integer
+                  minimum: 0
                   description: Courier ID
                 position:
                     $ref: '#/components/schemas/Coordinate'
