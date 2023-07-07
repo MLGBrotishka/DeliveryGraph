@@ -29,6 +29,7 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 				Message: "Longitude out of range",
 			}
 		} else if res == 3 {
+
 			errorResponse = lstruct.ErrorResponse{
 				Message: "Latitude out of range",
 			}

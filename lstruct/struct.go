@@ -20,6 +20,7 @@ func IsCorrectCoordinate(coordinate Coordinate) int {
 	if coordinate.Lon < -180 || coordinate.Lon > 180 {
 		return 1
 	} else if coordinate.Lat < -90 || coordinate.Lat > 90 {
+
 		return 2
 	}
 	return 0
