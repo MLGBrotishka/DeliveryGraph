@@ -18,14 +18,6 @@ func GetV1PointIsAvailable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (!lstruct.IsCorrect(coordinate)) {
-		errorResponse := lstruct.ErrorResponse{
-			Message: "Latitude or Longitude out of range",
-		}
-		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
-		return
-	}
-
 	// Проверка принадлежности координат диапазону
 	available := coordinate.Lon >= -90 && coordinate.Lon <= 90 && coordinate.Lat >= -90 && coordinate.Lat <= 90
 
