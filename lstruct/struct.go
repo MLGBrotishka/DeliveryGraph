@@ -17,16 +17,20 @@ type PathInfo struct {
 	Cost      float64      `json:"cost"`
 }
 
-func IsCorrect(coordinate Coordinate) bool {
-	if (coordinate.Lon < -180 || coordinate.Lon > 180 || coordinate.Lat < -90 || coordinate.Lat > 90) {
-		return false
+func IsCorrectCoordinate(coordinate Coordinate) int {
+	if (coordinate.Lon < -180 || coordinate.Lon > 180) {
+		return 1
+	} else if (coordinate.Lat < -90 || coordinate.Lat > 90) {
+		return 2
 	}
-	return true
+	return 0
 }
 
-func IsCorrect(courier Courier) bool {
-	if (courier.ID < 0 || !IsCorrect(courier.Position)) {
-		return false
+func IsCorrectCorier(courier Courier) int {
+	if (courier.ID < 0) {
+		return 1
+	} else if (IsCorrectCoordinate(courier.Position) != 0) {
+		return IsCorrectCoordinate(courier.Position)+1
 	}
-	return true
+	return 0
 }
