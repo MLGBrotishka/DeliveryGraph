@@ -33,7 +33,7 @@ func GetV1PointIsAvailable(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
-
+  
 	// Проверка принадлежности координат диапазону
 	available := coordinate.Lon >= -90 && coordinate.Lon <= 90 && coordinate.Lat >= -90 && coordinate.Lat <= 90
 
