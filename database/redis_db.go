@@ -49,7 +49,6 @@ func CloseRedisDB() error {
 	if client == nil {
 		return nil // Проверяем, что клиент Redis был инициализирован
 	}
-
 	// Закрытие соединения с Redis
 	err := client.Close()
 	if err != nil {
