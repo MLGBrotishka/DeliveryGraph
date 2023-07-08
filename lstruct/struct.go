@@ -10,6 +10,11 @@ type Courier struct {
 	Position Coordinate `json:"position" validate:"required"`
 }
 
+type CourierPointID struct {
+	ID int
+	PointID int
+}
+
 type Vertices map[int]Vertex
 
 type Vertex struct {
