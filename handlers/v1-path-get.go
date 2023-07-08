@@ -7,8 +7,8 @@ import (
 )
 
 func GetV1Path(w http.ResponseWriter, r *http.Request) {
-	var courier lstruct.Courier
-	err := json.NewDecoder(r.Body).Decode(&courier)
+	var pathRequest lstruct.PathRequest
+	err := json.NewDecoder(r.Body).Decode(&pathRequest)
 	if err != nil {
 		errorResponse := lstruct.ErrorResponse{
 			Message: "Bad Input",
@@ -17,7 +17,7 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := lstruct.IsCorrectCorier(courier)
+	res := lstruct.IsCorrectCourier(pathRequest.Courier)
 	if res != 0 {
 		var errorResponse lstruct.ErrorResponse
 		if res == 1 {
