@@ -37,25 +37,26 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vertices := Vertices{ }
-	edges := Edges{ }
-	chunks := map[Chunk]bool { }
+	vertices := lstruct.Vertices{}
+	edges := lstruct.Edges{}
+	chunks := map[lstruct.Chunk]bool{}
 
 	path, cost := findPath(pathRequest.Courier.Position, pathRequest.EndCoordinate, &vertices, &edges, &chunks)
 
 	// Создание и отправка ответа
 	if path != nil {
-		response := PathInfoResponse{
-			pathRequest.Courier.ID,
-			path,
-			cost,
-			cost
+		response := lstruct.PathInfoResponse{
+			CourierID: pathRequest.Courier.ID,
+			Path:      path,
+			Time:      int(cost),
+			Cost:      cost,
 		}
+		SendJSONResponse(w, http.StatusOK, response)
 	} else {
 		response := lstruct.ErrorResponse{
-			Message: "Kuda blyat",
+			Message: "Not reachable from point destination",
 		}
+		SendJSONResponse(w, http.StatusNotAcceptable, response)
 	}
 
-	SendJSONResponse(w, http.StatusOK, response)
 }

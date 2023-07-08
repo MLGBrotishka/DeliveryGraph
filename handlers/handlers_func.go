@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"graph/database"
+	"graph/lstruct"
 	"log"
-	"net/http"
-	"fmt"
 	"math"
+	"net/http"
 	"sort"
 )
 
@@ -18,8 +19,7 @@ func SendJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	}
 }
 
-
-func AStar(vertices *Vertices, edges *Edges, startID int, goalID int, max float64, chunks *map[Chunk]bool) ([]Coordinate, float64) {
+func AStar(vertices *lstruct.Vertices, edges *lstruct.Edges, startID int, goalID int, max float64, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
 	openSet := make(map[int]bool)
 	cameFrom := make(map[int]int)
 	gScore := make(map[int]float64)
@@ -39,7 +39,7 @@ func AStar(vertices *Vertices, edges *Edges, startID int, goalID int, max float6
 		if current < 0 {
 			return nil, math.Inf(1)
 		}
-		
+
 		if current == goalID {
 			return reconstructPath(vertices, cameFrom, current, startID), gScore[current]
 		}
@@ -51,12 +51,12 @@ func AStar(vertices *Vertices, edges *Edges, startID int, goalID int, max float6
 				val, ok := (*chunks)[(*vertices)[neighbor].Chunks[i]]
 				val = !val
 				if !ok {
-					GetVerticesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, vertices);
-					GetEdgesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, edges);
+					database.GetVerticesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, vertices)
+					database.GetEdgesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, edges)
 					(*chunks)[(*vertices)[neighbor].Chunks[i]] = true
 				}
 			}
-		
+
 			tentativeGScore := gScore[current] + (*edges)[current][neighbor]
 			if tentativeGScore < gScore[neighbor] {
 				cameFrom[neighbor] = current
@@ -70,19 +70,17 @@ func AStar(vertices *Vertices, edges *Edges, startID int, goalID int, max float6
 	return nil, math.Inf(1)
 }
 
-
-
 func heuristicCost(aX float64, aY float64, bX float64, bY float64) float64 {
 	dx := aX - bX
 	dy := aY - bY
 	return math.Sqrt(dx*dx + dy*dy)
 }
 
-func getLowestFScore( openSet *map[int]bool, fScore map[int]float64, gScore map[int]float64, max float64) int {
+func getLowestFScore(openSet *map[int]bool, fScore map[int]float64, gScore map[int]float64, max float64) int {
 	lowestID := -1
 	lowestValue := math.Inf(1)
 	for id := range *openSet {
-		if (max > 0.0) {
+		if max > 0.0 {
 			if gScore[id] < max && fScore[id] < lowestValue {
 				lowestID = id
 				lowestValue = fScore[id]
@@ -97,24 +95,24 @@ func getLowestFScore( openSet *map[int]bool, fScore map[int]float64, gScore map[
 	return lowestID
 }
 
-func reconstructPath(vertices *Vertices, cameFrom map[int]int, current int, startID int) []Coordinate {
-	path := []Coordinate{}
+func reconstructPath(vertices *lstruct.Vertices, cameFrom map[int]int, current int, startID int) []lstruct.Coordinate {
+	path := []lstruct.Coordinate{}
 	for current != startID {
 		vertex := (*vertices)[current]
-		path = append([]Coordinate{ Coordinate{vertex.X, vertex.Y} }, path...)
+		path = append([]lstruct.Coordinate{lstruct.Coordinate{Lon: vertex.X, Lat: vertex.Y}}, path...)
 		current = cameFrom[current]
 	}
 	vertex := (*vertices)[startID]
-	path = append([]Coordinate{ Coordinate{vertex.X, vertex.Y} }, path...)
+	path = append([]lstruct.Coordinate{lstruct.Coordinate{Lon: vertex.X, Lat: vertex.Y}}, path...)
 	return path
 }
 
-func findPoint(x, y float64, vertices *Vertices) int {
+func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 	var min float64
 	var minID int
 	f := 0
 	for id := range *vertices {
-		p := heuristicCost( x, y, (*vertices)[id].X, (*vertices)[id].Y )
+		p := heuristicCost(x, y, (*vertices)[id].X, (*vertices)[id].Y)
 		if f == 0 {
 			min = p
 			minID = id
@@ -123,12 +121,12 @@ func findPoint(x, y float64, vertices *Vertices) int {
 			min = p
 			minID = id
 		}
-//		fmt.Printf("%d: %f | %d %f\n", id, p, minID, min)
+		//		fmt.Printf("%d: %f | %d %f\n", id, p, minID, min)
 	}
 	return minID
 }
 
-func findPath(a Coordinate, b Coordinate, vertices *Vertices, edges *Edges, chunks *map[Chunk]bool) ([]Coordinate, float64) {
+func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
 	//load chunks, vertices and edges
 	//
 	startID := findPoint(a.Lon, a.Lat, vertices)
@@ -137,23 +135,23 @@ func findPath(a Coordinate, b Coordinate, vertices *Vertices, edges *Edges, chun
 	return path, cost
 }
 
-func sortByHeuristic(points []CourierPointID, goal int, vertices *Vertices) {
+func sortByHeuristic(points []lstruct.CourierPointID, goal int, vertices *lstruct.Vertices) {
 	sort.Slice(points, func(i, j int) bool {
 		return heuristicCost((*vertices)[points[i].PointID].X, (*vertices)[points[i].PointID].Y, (*vertices)[goal].X, (*vertices)[goal].Y) < heuristicCost((*vertices)[points[j].PointID].X, (*vertices)[points[j].PointID].Y, (*vertices)[goal].X, (*vertices)[goal].Y)
 	})
 }
 
-func findClosest(couriers[]Courier, goal Coordinate, vertices *Vertices, edges *Edges, chunks *map[Chunk]bool) ([]Coordinate, float64, int) {
-	pointsID := []CourierPointID {}
+func findClosest(couriers []lstruct.Courier, goal lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64, int) {
+	pointsID := []lstruct.CourierPointID{}
 	for i := 0; i < len(couriers); i++ {
-		pointsID = append( pointsID, CourierPointID{ couriers[i].ID, findPoint( couriers[i].Position.Lon, couriers[i].Position.Lat, vertices ) } )
+		pointsID = append(pointsID, lstruct.CourierPointID{ID: couriers[i].ID, PointID: findPoint(couriers[i].Position.Lon, couriers[i].Position.Lat, vertices)})
 	}
 	goalID := findPoint(goal.Lon, goal.Lat, vertices)
 	sortByHeuristic(pointsID, goalID, vertices)
-//	for i := 0; i < len(pointsID); i++ {
-//		fmt.Println(pointsID[i])
-//	}
-	path := []Coordinate {}
+	//	for i := 0; i < len(pointsID); i++ {
+	//		fmt.Println(pointsID[i])
+	//	}
+	path := []lstruct.Coordinate{}
 	cost := -1.0
 	id := -1
 	ind := -1
@@ -168,7 +166,7 @@ func findClosest(couriers[]Courier, goal Coordinate, vertices *Vertices, edges *
 	if ind == -1 {
 		return nil, math.Inf(1), -1
 	} else {
-		path1 := []Coordinate {}
+		path1 := []lstruct.Coordinate{}
 		cost1 := -1.0
 		id1 := -1
 		for i := ind + 1; i < len(pointsID); i++ {

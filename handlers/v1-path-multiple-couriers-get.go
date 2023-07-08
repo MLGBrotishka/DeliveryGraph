@@ -17,44 +17,23 @@ func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := lstruct.IsCorrectCorier(courier)
-	if res != 0 {
-		var errorResponse lstruct.ErrorResponse
-		if res == 1 {
-			errorResponse = lstruct.ErrorResponse{
-				Message: "Uncorrect courier ID",
-			}
-		} else if res == 2 {
-			errorResponse = lstruct.ErrorResponse{
-				Message: "Longitude out of range",
-			}
-		} else if res == 3 {
-			errorResponse = lstruct.ErrorResponse{
-				Message: "Latitude out of range",
-			}
-		}
-		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
-		return
-	}
-	
-	vertices := Vertices{ }
-	edges := Edges{ }
-	chunks := map[Chunk]bool { }
+	vertices := lstruct.Vertices{}
+	edges := lstruct.Edges{}
+	chunks := map[lstruct.Chunk]bool{}
 
 	path, cost, id := findClosest(pathMSRequest.Couriers, pathMSRequest.EndCoordinate, &vertices, &edges, &chunks)
 	if path != nil {
-		response := PathInfoResponse{
-			id,
-			path,
-			cost,
-			cost
+		response := lstruct.PathInfoResponse{
+			CourierID: id,
+			Path:      path,
+			Time:      int(cost),
+			Cost:      cost,
 		}
+		SendJSONResponse(w, http.StatusOK, response)
 	} else {
 		response := lstruct.ErrorResponse{
-			Message: "Kuda blyat",
+			Message: "Not reachable from point destination",
 		}
-
+		SendJSONResponse(w, http.StatusNotAcceptable, response)
 	}
-
-	SendJSONResponse(w, http.StatusOK, response)
 }
