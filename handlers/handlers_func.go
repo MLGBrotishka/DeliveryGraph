@@ -99,11 +99,11 @@ func reconstructPath(vertices *lstruct.Vertices, cameFrom map[int]int, current i
 	path := []lstruct.Coordinate{}
 	for current != startID {
 		vertex := (*vertices)[current]
-		path = append([]lstruct.Coordinate{lstruct.Coordinate{Lon: vertex.X, Lat: vertex.Y}}, path...)
+		path = append([]lstruct.Coordinate{{Lon: vertex.X, Lat: vertex.Y}}, path...)
 		current = cameFrom[current]
 	}
 	vertex := (*vertices)[startID]
-	path = append([]lstruct.Coordinate{lstruct.Coordinate{Lon: vertex.X, Lat: vertex.Y}}, path...)
+	path = append([]lstruct.Coordinate{{Lon: vertex.X, Lat: vertex.Y}}, path...)
 	return path
 }
 
@@ -127,8 +127,9 @@ func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 }
 
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
-	//load chunks, vertices and edges
-	//
+	chunk := database.GetChunk(a)
+	database.GetVerticesRedis(chunk.X, chunk.Y, vertices)
+	database.GetEdgesRedis(chunk.X, chunk.Y, edges)
 	startID := findPoint(a.Lon, a.Lat, vertices)
 	goalID := findPoint(b.Lon, b.Lat, vertices)
 	path, cost := AStar(vertices, edges, startID, goalID, -1.0, chunks)

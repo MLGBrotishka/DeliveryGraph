@@ -162,6 +162,11 @@ func EraseAllTablesRedis() error {
 	return err
 }
 
+func GetChunk(point lstruct.Coordinate) lstruct.Chunk {
+	//ЗАГЛУШКА
+	return lstruct.Chunk{X: 0, Y: 0}
+}
+
 func CloseRedisDB() error {
 	if client == nil {
 		return nil // Проверяем, что клиент Redis был инициализирован
