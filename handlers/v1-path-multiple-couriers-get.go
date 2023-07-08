@@ -7,8 +7,8 @@ import (
 )
 
 func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
-	var courier lstruct.Courier
-	err := json.NewDecoder(r.Body).Decode(&courier)
+	var pathMSRequest lstruct.PathMultipleStartRequest
+	err := json.NewDecoder(r.Body).Decode(&pathMSRequest)
 	if err != nil {
 		errorResponse := lstruct.ErrorResponse{
 			Message: "Bad Input",
@@ -53,6 +53,7 @@ func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
 		response := lstruct.ErrorResponse{
 			Message: "Kuda blyat",
 		}
+
 	}
 
 	SendJSONResponse(w, http.StatusOK, response)

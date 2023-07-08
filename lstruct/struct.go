@@ -40,7 +40,7 @@ func IsCorrectCoordinate(coordinate Coordinate) int {
 	return 0
 }
 
-func IsCorrectCorier(courier Courier) int {
+func IsCorrectCourier(courier Courier) int {
 	if courier.ID < 0 {
 		return 1
 	} else if IsCorrectCoordinate(courier.Position) != 0 {
