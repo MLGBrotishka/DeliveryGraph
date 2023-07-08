@@ -7,7 +7,6 @@ import (
 )
 
 func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
-	//для теста
 	var courier lstruct.Courier
 	err := json.NewDecoder(r.Body).Decode(&courier)
 	if err != nil {

@@ -10,11 +10,20 @@ type Courier struct {
 	Position Coordinate `json:"position" validate:"required"`
 }
 
-type Point struct {
-	Lon    float64 `json:"lon"`
-	Lat    float64 `json:"lat"`
-	Chunks []int
+type Vertices map[int]Vertex
+
+type Vertex struct {
+	X      float64
+	Y      float64
+	Chunks []Chunk
 }
+
+type Chunk struct {
+	X int
+	Y int
+}
+
+type Edges map[int]map[int]float64
 
 func IsCorrectCoordinate(coordinate Coordinate) int {
 	if coordinate.Lon < -180 || coordinate.Lon > 180 {
