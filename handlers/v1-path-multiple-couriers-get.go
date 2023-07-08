@@ -36,8 +36,23 @@ func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
-	response := lstruct.ErrorResponse{
-		Message: "Not implemented",
+	
+	vertices := Vertices{ }
+	edges := Edges{ }
+	chunks := map[Chunk]bool { }
+
+	path, cost, id := findClosest(pathMSRequest.Couriers, pathMSRequest.EndCoordinate, &vertices, &edges, &chunks)
+	if path != nil {
+		response := PathInfoResponse{
+			id,
+			path,
+			cost,
+			cost
+		}
+	} else {
+		response := lstruct.ErrorResponse{
+			Message: "Kuda blyat",
+		}
 	}
 
 	SendJSONResponse(w, http.StatusOK, response)

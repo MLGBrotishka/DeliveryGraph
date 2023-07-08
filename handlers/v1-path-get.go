@@ -36,9 +36,25 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
+
+	vertices := Vertices{ }
+	edges := Edges{ }
+	chunks := map[Chunk]bool { }
+
+	path, cost := findPath(pathRequest.Courier.Position, pathRequest.EndCoordinate, &vertices, &edges, &chunks)
+
 	// Создание и отправка ответа
-	response := lstruct.ErrorResponse{
-		Message: "Not implemented",
+	if path != nil {
+		response := PathInfoResponse{
+			pathRequest.Courier.ID,
+			path,
+			cost,
+			cost
+		}
+	} else {
+		response := lstruct.ErrorResponse{
+			Message: "Kuda blyat",
+		}
 	}
 
 	SendJSONResponse(w, http.StatusOK, response)

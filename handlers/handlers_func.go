@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"fmt"
+	"math"
+	"sort"
 )
 
 func SendJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
@@ -126,23 +129,24 @@ func findPoint(x, y float64, vertices *Vertices) int {
 }
 
 func findPath(a Coordinate, b Coordinate, vertices *Vertices, edges *Edges, chunks *map[Chunk]bool) ([]Coordinate, float64) {
+	//load chunks, vertices and edges
+	//
 	startID := findPoint(a.Lon, a.Lat, vertices)
 	goalID := findPoint(b.Lon, b.Lat, vertices)
-	//load chunks
 	path, cost := AStar(vertices, edges, startID, goalID, -1.0, chunks)
 	return path, cost
 }
 
-func sortByHeuristic(points []int, goal int, vertices *Vertices) {
+func sortByHeuristic(points []CourierPointID, goal int, vertices *Vertices) {
 	sort.Slice(points, func(i, j int) bool {
-		return heuristicCost((*vertices)[points[i]].X, (*vertices)[points[i]].Y, (*vertices)[goal].X, (*vertices)[goal].Y) < heuristicCost((*vertices)[points[j]].X, (*vertices)[points[j]].Y, (*vertices)[goal].X, (*vertices)[goal].Y)
+		return heuristicCost((*vertices)[points[i].PointID].X, (*vertices)[points[i].PointID].Y, (*vertices)[goal].X, (*vertices)[goal].Y) < heuristicCost((*vertices)[points[j].PointID].X, (*vertices)[points[j].PointID].Y, (*vertices)[goal].X, (*vertices)[goal].Y)
 	})
 }
 
-func findClosest(coords[]Coordinate, goal Coordinate, vertices *Vertices, edges *Edges, chunks *map[Chunk]bool) ([]Coordinate, float64) {
-	pointsID := []int {}
-	for i := 0; i < len(coords); i++ {
-		pointsID = append(pointsID, findPoint(coords[i].Lon, coords[i].Lat, vertices))
+func findClosest(couriers[]Courier, goal Coordinate, vertices *Vertices, edges *Edges, chunks *map[Chunk]bool) ([]Coordinate, float64, int) {
+	pointsID := []CourierPointID {}
+	for i := 0; i < len(couriers); i++ {
+		pointsID = append( pointsID, CourierPointID{ couriers[i].ID, findPoint( couriers[i].Position.Lon, couriers[i].Position.Lat, vertices ) } )
 	}
 	goalID := findPoint(goal.Lon, goal.Lat, vertices)
 	sortByHeuristic(pointsID, goalID, vertices)
@@ -151,26 +155,31 @@ func findClosest(coords[]Coordinate, goal Coordinate, vertices *Vertices, edges 
 //	}
 	path := []Coordinate {}
 	cost := -1.0
+	id := -1
 	ind := -1
 	for i := 0; i < len(pointsID); i++ {
-		path, cost = AStar(vertices, edges, pointsID[i], goalID, -1.0, chunks)
+		path, cost = AStar(vertices, edges, pointsID[i].PointID, goalID, -1.0, chunks)
+		id = pointsID[i].ID
 		if path != nil {
 			ind = i
 			break
 		}
 	}
 	if ind == -1 {
-		return nil, math.Inf(1)
+		return nil, math.Inf(1), -1
 	} else {
 		path1 := []Coordinate {}
 		cost1 := -1.0
+		id1 := -1
 		for i := ind + 1; i < len(pointsID); i++ {
-			path1, cost1 = AStar(vertices, edges, pointsID[i], goalID, cost, chunks)
+			path1, cost1 = AStar(vertices, edges, pointsID[i].PointID, goalID, cost, chunks)
+			id1 = pointsID[i].ID
 			if path1 != nil && cost1 < cost {
 				path = path1
 				cost = cost1
+				id = id1
 			}
 		}
-		return path, cost
+		return path, cost, id
 	}
 }
