@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"graph/database"
 	"graph/lstruct"
 	"net/http"
 )
@@ -38,9 +36,6 @@ func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
-	database.SelectRedis(courier.ID)
-	database.SetRedis(fmt.Sprintf("%v", courier.Position.Lat), fmt.Sprintf("%v", courier.Position.Lon), 0)
-
 	response := lstruct.ErrorResponse{
 		Message: "Not implemented",
 	}

@@ -2,10 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"graph/database"
 	"graph/lstruct"
-	"log"
 	"net/http"
 )
 
@@ -39,9 +36,6 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
-	database.SelectRedis(courier.ID)
-	log.Println(database.GetRedis(fmt.Sprintf("%v", courier.Position.Lat)))
-
 	// Создание и отправка ответа
 	response := lstruct.ErrorResponse{
 		Message: "Not implemented",
