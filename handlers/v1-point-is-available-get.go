@@ -18,17 +18,10 @@ func GetV1PointIsAvailable(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := lstruct.IsCorrectCoordinate(coordinate)
-	if res != 0 {
-		var errorResponse lstruct.ErrorResponse
-		if res == 1 {
-			errorResponse = lstruct.ErrorResponse{
-				Message: "Longitude out of range",
-			}
-		} else if res == 2 {
-			errorResponse = lstruct.ErrorResponse{
-				Message: "Latitude out of range",
-			}
+	err = lstruct.ValidateCoordinate(coordinate)
+	if err != nil {
+		errorResponse := lstruct.ErrorResponse{
+			Message: err.Error(),
 		}
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
