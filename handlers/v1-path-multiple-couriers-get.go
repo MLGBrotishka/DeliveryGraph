@@ -17,6 +17,15 @@ func GetV1PathMultipleCouriers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = lstruct.ValidatePathMultiple(pathMSRequest)
+	if err != nil {
+		errorResponse := lstruct.ErrorResponse{
+			Message: err.Error(),
+		}
+		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
+		return
+	}
+
 	vertices := lstruct.Vertices{}
 	edges := lstruct.Edges{}
 	chunks := map[lstruct.Chunk]bool{}
