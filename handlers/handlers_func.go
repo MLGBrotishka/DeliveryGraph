@@ -110,6 +110,7 @@ func reconstructPath(vertices *lstruct.Vertices, cameFrom map[int]int, current i
 func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 	var min float64
 	var minID int
+	minID = -1
 	f := 0
 	for id := range *vertices {
 		p := heuristicCost(x, y, (*vertices)[id].X, (*vertices)[id].Y)
@@ -121,7 +122,6 @@ func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 			min = p
 			minID = id
 		}
-		//		fmt.Printf("%d: %f | %d %f\n", id, p, minID, min)
 	}
 	return minID
 }
@@ -149,9 +149,6 @@ func findClosest(couriers []lstruct.Courier, goal lstruct.Coordinate, vertices *
 	}
 	goalID := findPoint(goal.Lon, goal.Lat, vertices)
 	sortByHeuristic(pointsID, goalID, vertices)
-	//	for i := 0; i < len(pointsID); i++ {
-	//		fmt.Println(pointsID[i])
-	//	}
 	path := []lstruct.Coordinate{}
 	cost := -1.0
 	id := -1
