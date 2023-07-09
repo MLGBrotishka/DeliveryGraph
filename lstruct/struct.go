@@ -11,7 +11,7 @@ type Courier struct {
 }
 
 type CourierPointID struct {
-	ID int
+	ID      int
 	PointID int
 }
 

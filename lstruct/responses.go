@@ -1,7 +1,7 @@
 package lstruct
 
 type PathInfoResponse struct {
-	CourierID int          `json:"courier-id"`
+	CourierID int          `json:"courier_id"`
 	Path      []Coordinate `json:"path"`
 	Time      int          `json:"time"`
 	Cost      float64      `json:"cost"`
