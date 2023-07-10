@@ -126,6 +126,24 @@ func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 	return minID
 }
 
+func findChunk(pointX float64, pointY float64, сY, сX, chunkSizeX, chunkSizeY float64) ([]lstruct.Chunk) {
+	x := (pointX - сX) / chunkSizeX
+	y := (pointY - сY) / chunkSizeY
+	
+	if x == float64(int(x)) && y == float64(int(y)) {
+		//kek (x-1, y-1), (x, y-1), (x-1, y), (x, y)
+		return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:int(y)-1}, lstruct.Chunk{X:int(x), Y:int(y)-1}, lstruct.Chunk{X:int(x)-1, Y:int(y)}, lstruct.Chunk{X:int(x), Y:int(y)} }
+	} else if x == float64(int(x)) {
+		//kek (x-1, int(y)), (x, int(y))
+		return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:int(y)}, lstruct.Chunk{X:int(x), Y:int(y)} }
+	} else if y == float64(int(y)) {
+		//kek (int(x), y-1), (int(x), y)
+		return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)-1}, lstruct.Chunk{X:int(x), Y:int(y)} }
+	} else {
+		return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)} }
+	}
+}
+
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
 	chunk := database.GetChunk(a)
 	database.GetVerticesRedis(chunk.X, chunk.Y, vertices)
