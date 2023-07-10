@@ -35,6 +35,7 @@ func GetV2Path(w http.ResponseWriter, r *http.Request) {
 	// multiplier
 	// in (cost *multiplier * 1/12)
 	// Создание и отправка ответа
+	cost = float64(cost*GetTimeValue(formatTime(PathRequestV2.Time.String()))*OkladPerHour(cost)/3600)
 	if path != nil {
 		response := lstruct.PathInfoResponse{
 			CourierID: pathRequest.Courier.ID,
