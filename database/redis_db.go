@@ -45,7 +45,7 @@ func SetRedis(key string, value string, expiration time.Duration) error {
 }
 
 func AddEdgesToRedis(x int, y int, data lstruct.Edges) error {
-	key := fmt.Sprintf("%d%d", x, y)
+	key := fmt.Sprintf("%d_%d", x, y)
 	hash := make(map[string]interface{})
 	SelectRedis(1)
 	for k, v := range data {
@@ -66,7 +66,7 @@ func AddEdgesToRedis(x int, y int, data lstruct.Edges) error {
 }
 
 func GetEdgesRedis(x int, y int, data *lstruct.Edges) error {
-	key := fmt.Sprintf("%d%d", x, y)
+	key := fmt.Sprintf("%d_%d", x, y)
 	SelectRedis(1)
 	result, err := client.HGetAll(context.Background(), key).Result()
 	if err != nil {
@@ -101,7 +101,7 @@ func GetEdgesRedis(x int, y int, data *lstruct.Edges) error {
 }
 
 func AddVerticesToRedis(x int, y int, data lstruct.Vertices) error {
-	key := fmt.Sprintf("%d%d", x, y)
+	key := fmt.Sprintf("%d_%d", x, y)
 	hash := make(map[string]interface{})
 
 	for k, v := range data {
@@ -122,7 +122,7 @@ func AddVerticesToRedis(x int, y int, data lstruct.Vertices) error {
 }
 
 func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
-	key := fmt.Sprintf("%d%d", x, y)
+	key := fmt.Sprintf("%d_%d", x, y)
 	SelectRedis(0)
 	result, err := client.HGetAll(context.Background(), key).Result()
 	if err != nil {
