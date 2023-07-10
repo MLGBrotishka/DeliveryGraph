@@ -31,7 +31,9 @@ func GetV2Path(w http.ResponseWriter, r *http.Request) {
 	chunks := map[lstruct.Chunk]bool{}
 
 	path, cost := findPath(pathRequest.Courier.Position, pathRequest.EndCoordinate, &vertices, &edges, &chunks)
-
+	// парсинг
+	// multiplier
+	// in (cost *multiplier * 1/12)
 	// Создание и отправка ответа
 	if path != nil {
 		response := lstruct.PathInfoResponse{
