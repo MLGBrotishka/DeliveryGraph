@@ -204,7 +204,7 @@ func findClosest(couriers []lstruct.Courier, goal lstruct.Coordinate, vertices *
 	goalID := findPoint(goal.Lon, goal.Lat, vertices)
 
 	sortByHeuristic(pointsID, goalID, vertices)
-	path := []lstruct.Coordinate{}
+	var path []lstruct.Coordinate
 	cost := -1.0
 	id := -1
 	ind := -1
