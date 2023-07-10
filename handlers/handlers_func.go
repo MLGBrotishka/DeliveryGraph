@@ -126,6 +126,42 @@ func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 	return minID
 }
 
+func findChunk(pointX float64, pointY float64, minY, minX, chunkSizeX, chunkSizeY float64) ([]lstruct.Chunk) {
+	x := (pointX - minX) / chunkSizeX
+	y := (pointY - minY) / chunkSizeY
+	
+	if x == float64(int(x)) && y == float64(int(y)) {
+		if x == 0 && y == 0 {
+			return []lstruct.Chunk { lstruct.Chunk{X:0, Y:0} }
+		} else if x == 0 {
+			//kek (0, y-1), (0, y)
+			return []lstruct.Chunk { lstruct.Chunk{X:0, Y:int(y)-1}, lstruct.Chunk{X:0, Y:int(y)} }
+		} else if y == 0 {
+			//kek (x-1, 0), (x, 0)
+			return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:0}, lstruct.Chunk{X:int(x), Y:0} }
+		} else {
+			//kek (x-1, y-1), (x, y-1), (x-1, y), (x, y)
+			return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:int(y)-1}, lstruct.Chunk{X:int(x), Y:int(y)-1}, lstruct.Chunk{X:int(x)-1, Y:int(y)}, lstruct.Chunk{X:int(x), Y:int(y)} }
+		}
+	} else if x == float64(int(x)) {
+		if x == 0 {
+			return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)} }
+		} else {
+			//kek (x-1, int(y)), (x, int(y))
+			return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:int(y)}, lstruct.Chunk{X:int(x), Y:int(y)} }
+		}
+	} else if y == float64(int(y)) {
+		if y == 0 {
+			return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)} }
+		} else {
+			//kek (int(x), y-1), (int(x), y)
+			return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)-1}, lstruct.Chunk{X:int(x), Y:int(y)} }
+		}
+	} else {
+		return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)} }
+	}
+}
+
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
 	chunk := database.GetChunk(a)
 	database.GetVerticesRedis(chunk.X, chunk.Y, vertices)
