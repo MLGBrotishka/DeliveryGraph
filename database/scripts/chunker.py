@@ -28,12 +28,12 @@
 import os
 from math import radians, sin, cos, sqrt, atan2
 
-
+DIFF = 0.000001
 EPS = 0.05
 SOURCE_FILE = 'ma.pypgr'
 
 
-def create_grid(chunk_num: str, source: str) -> tuple:
+def create_grid(chunk_size: float, source: str) -> tuple:
     
     with open(source, 'r') as source_file:
 
@@ -56,29 +56,34 @@ def create_grid(chunk_num: str, source: str) -> tuple:
                     max_lat = float(numbers[1])
                 if (float(numbers[1]) < min_lat):
                     min_lat = float(numbers[1])
-
+        
         # Отступим от самых крайних вершин ВСЕГО графа на EPS
-        min_lat, max_lat = min_lat + EPS, max_lat - EPS
-        min_long, max_long = min_long + EPS, max_long - EPS
+        min_lat, max_lat = round(min_lat + EPS, 3), round(max_lat - EPS, 3)
+        min_long, max_long = round(min_long + EPS, 3), round(max_long - EPS, 3)
 
         print("min_lat:", min_lat)
         print("max_lat:", max_lat)
         print("min_long:", min_long)
         print("max_long:", max_long)
         
-        # Получим размер одного чанка
-        latitude_step = (max_lat - min_lat) / chunk_num
-        longtitude_step = (max_long - min_long) / chunk_num
-        print("chunk_size:", latitude_step, longtitude_step)
+        # Получим количество чанков
+        latitude_chunks_for_side = int((max_lat - min_lat) / chunk_size)
+        longtitude_chunks_for_side = int((max_long - min_long) / chunk_size)
+        
+        print("Number of chunks:", latitude_chunks_for_side * longtitude_chunks_for_side)
 
         # Получим границы чанков
         horizontal_grid = []
         vertical_grid = []
-        for i in range(chunk_num + 1):
-            horizontal_grid.append(min_lat + latitude_step * i)
-            vertical_grid.append(min_long + longtitude_step * i)
+        for i in range(latitude_chunks_for_side + 1):
+            horizontal_grid.append(min_lat + chunk_size * i)
+        for i in range(longtitude_chunks_for_side + 1):
+            vertical_grid.append(min_long + chunk_size * i)
+
+        print(horizontal_grid)
+        print(vertical_grid)
         
-        return horizontal_grid, vertical_grid
+        return horizontal_grid, vertical_grid, latitude_chunks_for_side, longtitude_chunks_for_side
 
 
 def get_max_node_num(source_file: str) -> int:
@@ -244,9 +249,8 @@ def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: 
     return len(nodes_to_tmp)
                         
 
-def get_chunk(chunk_num: int, grid_x: int, grid_y: int, source: str, folder_name: str):
+def get_chunk(chunk_size: float, grid_x: int, grid_y: int, source: str, folder_name: str):
 
-    chunk_num = int(chunk_num)
     grid_x = int(grid_x)
     grid_y = int(grid_y)
     number_of_selected_edges = int(0)
@@ -283,19 +287,15 @@ def get_chunk(chunk_num: int, grid_x: int, grid_y: int, source: str, folder_name
                     min_lat = float(numbers[1])
 
         # Отступим от самых крайних вершин ВСЕГО графа на EPS
-        min_lat, max_lat = min_lat + EPS, max_lat - EPS
-        min_long, max_long = min_long + EPS, max_long - EPS
-
-        # Получим размер одного чанка
-        gor_step = (max_lat - min_lat) / chunk_num
-        vert_step = (max_long - min_long) / chunk_num
+        min_lat, max_lat = round(min_lat + EPS, 3), round(max_lat - EPS, 3)
+        min_long, max_long = round(min_long + EPS, 3), round(max_long - EPS, 3)
 
         # Получим границы чанка
-        gor_grid_1 = min_lat + grid_y * gor_step
-        gor_grid_2 = gor_grid_1 + gor_step
+        gor_grid_1 = min_lat + grid_y * chunk_size
+        gor_grid_2 = gor_grid_1 + chunk_size
         
-        vert_grid_1 = min_long + grid_x * vert_step
-        vert_grid_2 = vert_grid_1 + vert_step
+        vert_grid_1 = min_long + grid_x * chunk_size
+        vert_grid_2 = vert_grid_1 + chunk_size
 
         # Вернем каретку в начало файла-источника, после поиска минимальных величин. 
         source_file.seek(0)
@@ -327,16 +327,16 @@ def get_chunk(chunk_num: int, grid_x: int, grid_y: int, source: str, folder_name
                         new_line.append(str(grid_x))
                         new_line.append(str(grid_y))
                         
-                        if (lat == gor_grid_1):
+                        if (abs(lat - gor_grid_1) < DIFF):
                             new_line.append(str(grid_x))
                             new_line.append(str(grid_y - 1))
-                        if (lat == gor_grid_2):
+                        if (abs(lat - gor_grid_2) < DIFF):
                             new_line.append(str(grid_x))
                             new_line.append(str(grid_y + 1))
-                        if (long == vert_grid_1):
+                        if (abs(long - vert_grid_1) < DIFF):
                             new_line.append(str(grid_x - 1))
                             new_line.append(str(grid_y))
-                        if (long == vert_grid_2):
+                        if (abs(long - vert_grid_2) < DIFF):
                             new_line.append(str(grid_x + 1))
                             new_line.append(str(grid_y))
                             
@@ -383,14 +383,14 @@ def get_chunk(chunk_num: int, grid_x: int, grid_y: int, source: str, folder_name
         
 if __name__ == "__main__":
 
-    CHUNK_NUM = 5
+    CHUNK_SIZE = 0.1
     
     os.makedirs('chunks', exist_ok=True)
 
-    hor_grid, vert_grid = create_grid(CHUNK_NUM, SOURCE_FILE)
-        
+    hor_grid, vert_grid, lat_chunks_for_side, long_chunks_for_side = create_grid(CHUNK_SIZE, SOURCE_FILE)
+    
     break_intersected_edges(hor_grid, vert_grid, SOURCE_FILE, 'tmp.txt')
 
-    for i in range(CHUNK_NUM):
-        for j in range(CHUNK_NUM):
-            get_chunk(CHUNK_NUM, i, j, 'tmp.txt', 'chunks')
+    for i in range(long_chunks_for_side):
+        for j in range(lat_chunks_for_side):
+            get_chunk(CHUNK_SIZE, i, j, 'tmp.txt', 'chunks')
