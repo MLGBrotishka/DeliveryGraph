@@ -10,11 +10,6 @@ import (
 	"sort"
 )
 
-var cY = 55.49720759999999600
-var cX = 37.11943929999999600
-var chunkSizeX = 0.10575940000000088
-var chunkSizeY = 0.21360920000000191
-
 func SendJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
@@ -131,9 +126,9 @@ func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 	return minID
 }
 
-func FindChunk(pointX float64, pointY float64, сY, сX, chunkSizeX, chunkSizeY float64) ([]lstruct.Chunk) {
-	x := (pointX - сX) / chunkSizeX
-	y := (pointY - сY) / chunkSizeY
+func FindChunk(pointX float64, pointY float64) ([]lstruct.Chunk) {
+	x := (pointX - database.CenterPoint.Lon) / database.ChunkSize.Lon
+	y := (pointY - database.CenterPoint.Lat) / database.ChunkSize.Lat
 	
 	if x == float64(int(x)) && y == float64(int(y)) {
 		//kek (x-1, y-1), (x, y-1), (x-1, y), (x, y)
@@ -150,7 +145,7 @@ func FindChunk(pointX float64, pointY float64, сY, сX, chunkSizeX, chunkSizeY 
 }
 
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
-	chunks := FindChunk(a.Lon, a.Lat, cY, cX, chunkSizeX, chunkSizeY)
+	chunks := FindChunk(a.Lon, a.Lat)
 	for i := 0; i < len(chunks); i++ {
 		database.GetVerticesRedis(chunks[i].X, chunks[i].Y, vertices)
 		database.GetEdgesRedis(chunks[i].X, chunks[i].Y, edges)
