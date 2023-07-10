@@ -34,7 +34,7 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 	// time.now()
 	// multiplier
 	// in (cost *multiplier * 1/12)
-        cost := float64(cost*GetTimeValue(time.Now().String())*OkladPerHour(cost)/3600)
+        cost = float64(cost*GetTimeValue(time.Now().String())*OkladPerHour(cost)/3600)
 	// Создание и отправка ответа
 	if path != nil {
 		response := lstruct.PathInfoResponse{
