@@ -36,3 +36,14 @@ func FormatTime(inputTime string) (string, error) {
 
 	return formattedTime, nil
 }
+func OkladPerHour(input float64) float64 {
+    hour := 3600.0
+    result := input /hour
+    if result > 5 {
+        return 360
+    } else if result > 2 {
+        return 330
+    } else {
+        return 300
+    }
+}
