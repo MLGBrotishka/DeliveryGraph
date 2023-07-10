@@ -48,8 +48,7 @@ func AStar(vertices *lstruct.Vertices, edges *lstruct.Edges, startID int, goalID
 
 		for neighbor := range (*edges)[current] {
 			for i := 0; i < len((*vertices)[neighbor].Chunks); i++ {
-				val, ok := (*chunks)[(*vertices)[neighbor].Chunks[i]]
-				val = !val
+				_, ok := (*chunks)[(*vertices)[neighbor].Chunks[i]]
 				if !ok {
 					database.GetVerticesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, vertices)
 					database.GetEdgesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, edges)
@@ -164,7 +163,7 @@ func findClosest(couriers []lstruct.Courier, goal lstruct.Coordinate, vertices *
 	if ind == -1 {
 		return nil, math.Inf(1), -1
 	} else {
-		path1 := []lstruct.Coordinate{}
+		var path1 []lstruct.Coordinate
 		cost1 := -1.0
 		id1 := -1
 		for i := ind + 1; i < len(pointsID); i++ {
