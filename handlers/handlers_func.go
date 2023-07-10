@@ -144,10 +144,23 @@ func FindChunk(pointX float64, pointY float64) ([]lstruct.Chunk) {
 }
 
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
-	chunks := FindChunk(a.Lon, a.Lat)
-	for i := 0; i < len(chunks); i++ {
-		database.GetVerticesRedis(chunks[i].X, chunks[i].Y, vertices)
-		database.GetEdgesRedis(chunks[i].X, chunks[i].Y, edges)
+	chunksArr := FindChunk(a.Lon, a.Lat)
+	for i := 0; i < len(chunksArr); i++ {
+		_, ok := (*chunks)[chunksArr[i]]
+		if !ok {
+			database.GetVerticesRedis(chunksArr[i].X, chunksArr[i].Y, vertices)
+			database.GetEdgesRedis(chunksArr[i].X, chunksArr[i].Y, edges)
+			(*chunks)[chunksArr[i]] = true
+		}
+	}
+	chunksArr = FindChunk(b.Lon, b.Lat)
+	for i := 0; i < len(chunksArr); i++ {
+		_, ok := (*chunks)[chunksArr[i]]
+		if !ok {
+			database.GetVerticesRedis(chunksArr[i].X, chunksArr[i].Y, vertices)
+			database.GetEdgesRedis(chunksArr[i].X, chunksArr[i].Y, edges)
+			(*chunks)[chunksArr[i]] = true
+		}
 	}
 
 	startID := findPoint(a.Lon, a.Lat, vertices)
@@ -163,11 +176,33 @@ func sortByHeuristic(points []lstruct.CourierPointID, goal int, vertices *lstruc
 }
 
 func findClosest(couriers []lstruct.Courier, goal lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64, int) {
-	pointsID := []lstruct.CourierPointID{}
+	var pointsID  []lstruct.CourierPointID
+	var chunksArr []lstruct.Chunk
 	for i := 0; i < len(couriers); i++ {
+		chunksArr = FindChunk(couriers[i].Position.Lon, couriers[i].Position.Lat)
+		for i := 0; i < len(chunksArr); i++ {
+			_, ok := (*chunks)[chunksArr[i]]
+			if !ok {
+				database.GetVerticesRedis(chunksArr[i].X, chunksArr[i].Y, vertices)
+				database.GetEdgesRedis(chunksArr[i].X, chunksArr[i].Y, edges)
+				(*chunks)[chunksArr[i]] = true
+			}
+		}
+
 		pointsID = append(pointsID, lstruct.CourierPointID{ID: couriers[i].ID, PointID: findPoint(couriers[i].Position.Lon, couriers[i].Position.Lat, vertices)})
 	}
+
+	chunksArr = FindChunk(goal.Lon, goal.Lat)
+	for i := 0; i < len(chunksArr); i++ {
+		_, ok := (*chunks)[chunksArr[i]]
+		if !ok {
+			database.GetVerticesRedis(chunksArr[i].X, chunksArr[i].Y, vertices)
+			database.GetEdgesRedis(chunksArr[i].X, chunksArr[i].Y, edges)
+			(*chunks)[chunksArr[i]] = true
+		}
+	}
 	goalID := findPoint(goal.Lon, goal.Lat, vertices)
+
 	sortByHeuristic(pointsID, goalID, vertices)
 	path := []lstruct.Coordinate{}
 	cost := -1.0
