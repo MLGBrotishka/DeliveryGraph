@@ -9,9 +9,13 @@ import (
 	"log"
 	"strconv"
 	"time"
+	"lstruct"
 
 	"github.com/redis/go-redis/v9"
 )
+
+CenterPoint := lstruct.Coordinate {Lon: 37.11943929999999600, Lat: 55.49720759999999600}
+ChunkSize := lstruct.Coordinate {Lon: 0.10575940000000088, Lat: 0.21360920000000191}
 
 var client *redis.Client
 
