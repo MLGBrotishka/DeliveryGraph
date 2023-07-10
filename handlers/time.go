@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func getTimeValue(inputTime string) float64 {
+func GetTimeValue(inputTime string) float64 {
 	parsedTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", inputTime)
 	if err != nil {
 		fmt.Println("Ошибка разбора времени:", err)
@@ -13,16 +13,15 @@ func getTimeValue(inputTime string) float64 {
 	}
 
 	hour := parsedTime.Hour()
-	minute := parsedTime.Minute()
 
-	if (hour >= 8 && hour < 10) || (hour == 17 && minute >= 30) || (hour > 17 && hour < 21) {
+	if (hour >= 8 && hour < 10) || (hour > 17 && hour < 21) {
 		return 1.2
 	}
 
 	return 1
 }
 
-func formatTime(inputTime string) (string, error) {
+func FormatTime(inputTime string) (string, error) {
 	parsedTime, err := time.Parse("15:04:05", inputTime)
 	if err != nil {
 		return "", err
@@ -36,4 +35,15 @@ func formatTime(inputTime string) (string, error) {
 	).Format("2006-01-02 15:04:05 -0700 MST")
 
 	return formattedTime, nil
+}
+func OkladPerHour(input float64) float64 {
+	hour := 3600.0
+	result := input / hour
+	if result > 5 {
+		return 360
+	} else if result > 2 {
+		return 330
+	} else {
+		return 300
+	}
 }
