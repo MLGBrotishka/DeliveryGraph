@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func getTimeValue(inputTime string) float64 {
+func GetTimeValue(inputTime string) float64 {
 	parsedTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", inputTime)
 	if err != nil {
 		fmt.Println("Ошибка разбора времени:", err)
@@ -21,7 +21,7 @@ func getTimeValue(inputTime string) float64 {
 	return 1
 }
 
-func formatTime(inputTime string) (string, error) {
+func FormatTime(inputTime string) (string, error) {
 	parsedTime, err := time.Parse("15:04:05", inputTime)
 	if err != nil {
 		return "", err
