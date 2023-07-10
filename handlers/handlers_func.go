@@ -125,29 +125,29 @@ func findPoint(x, y float64, vertices *lstruct.Vertices) int {
 	return minID
 }
 
-func FindChunk(pointX float64, pointY float64) ([]lstruct.Chunk) {
+func FindChunk(pointX float64, pointY float64) []lstruct.Chunk {
 	x := (pointX - database.CenterPoint.Lon) / database.ChunkSize.Lon
 	y := (pointY - database.CenterPoint.Lat) / database.ChunkSize.Lat
-	
+
 	if x == float64(int(x)) && y == float64(int(y)) {
 		//kek (x-1, y-1), (x, y-1), (x-1, y), (x, y)
-		return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:int(y)-1}, lstruct.Chunk{X:int(x), Y:int(y)-1}, lstruct.Chunk{X:int(x)-1, Y:int(y)}, lstruct.Chunk{X:int(x), Y:int(y)} }
+		return []lstruct.Chunk{{X: int(x) - 1, Y: int(y) - 1}, {X: int(x), Y: int(y) - 1}, {X: int(x) - 1, Y: int(y)}, {X: int(x), Y: int(y)}}
 	} else if x == float64(int(x)) {
 		//kek (x-1, int(y)), (x, int(y))
-		return []lstruct.Chunk { lstruct.Chunk{X:int(x)-1, Y:int(y)}, lstruct.Chunk{X:int(x), Y:int(y)} }
+		return []lstruct.Chunk{{X: int(x) - 1, Y: int(y)}, {X: int(x), Y: int(y)}}
 	} else if y == float64(int(y)) {
 		//kek (int(x), y-1), (int(x), y)
-		return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)-1}, lstruct.Chunk{X:int(x), Y:int(y)} }
+		return []lstruct.Chunk{{X: int(x), Y: int(y) - 1}, {X: int(x), Y: int(y)}}
 	} else {
-		return []lstruct.Chunk { lstruct.Chunk{X:int(x), Y:int(y)} }
+		return []lstruct.Chunk{{X: int(x), Y: int(y)}}
 	}
 }
 
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
-	chunks := FindChunk(a.Lon, a.Lat)
-	for i := 0; i < len(chunks); i++ {
-		database.GetVerticesRedis(chunks[i].X, chunks[i].Y, vertices)
-		database.GetEdgesRedis(chunks[i].X, chunks[i].Y, edges)
+	chunkArr := FindChunk(a.Lon, a.Lat)
+	for i := 0; i < len(chunkArr); i++ {
+		database.GetVerticesRedis(chunkArr[i].X, chunkArr[i].Y, vertices)
+		database.GetEdgesRedis(chunkArr[i].X, chunkArr[i].Y, edges)
 	}
 
 	startID := findPoint(a.Lon, a.Lat, vertices)
