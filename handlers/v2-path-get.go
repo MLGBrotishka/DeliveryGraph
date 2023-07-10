@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func GetV1Path(w http.ResponseWriter, r *http.Request) {
-	var pathRequest lstruct.PathRequest
+func GetV2Path(w http.ResponseWriter, r *http.Request) {
+	var pathRequest lstruct.PathRequestV2
 	err := json.NewDecoder(r.Body).Decode(&pathRequest)
 	if err != nil {
 		errorResponse := lstruct.ErrorResponse{
@@ -17,7 +17,7 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = lstruct.ValidatePath(pathRequest)
+	err = lstruct.ValidatePathV2(pathRequest)
 	if err != nil {
 		errorResponse := lstruct.ErrorResponse{
 			Message: err.Error(),
@@ -31,9 +31,6 @@ func GetV1Path(w http.ResponseWriter, r *http.Request) {
 	chunks := map[lstruct.Chunk]bool{}
 
 	path, cost := findPath(pathRequest.Courier.Position, pathRequest.EndCoordinate, &vertices, &edges, &chunks)
-	// time.now()
-	// multiplier
-	// in (cost *multiplier * 1/12)
 
 	// Создание и отправка ответа
 	if path != nil {
