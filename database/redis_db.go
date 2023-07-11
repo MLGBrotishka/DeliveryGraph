@@ -23,7 +23,7 @@ var client *redis.Client
 func ConnectRedisDB() error {
 	// Создание клиента Redis
 	client = redis.NewClient(&redis.Options{
-		Addr:     "localhost:2001", // Адрес и порт Redis сервера
+		Addr:     "localhost:6379", // Адрес и порт Redis сервера
 		Password: "",               // Пароль (если требуется)
 		DB:       0,                // Индекс базы данных
 	})
