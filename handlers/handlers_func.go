@@ -150,7 +150,6 @@ func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vert
 		}
 	}
 	for i := 0; i < len(chunksArr); i++ {
-
 		_, ok := (*chunks)[chunksArr[i]]
 		if !ok {
 			database.GetVerticesRedis(chunksArr[i].X, chunksArr[i].Y, vertices)
