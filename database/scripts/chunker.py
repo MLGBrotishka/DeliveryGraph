@@ -2,7 +2,7 @@
 
 Этот скрипт обрабатывает графовое предсталвение участка карты OpenStreetMap.
 Получая на вход исходный файл-граф (SOURCE_FILE), скрипт разбивает граф на
-указанное пользователем количество чанков (CHUNK_NUM^2).
+чанки размера, указанного пользователем CHUNK_SIZE.
 
 Чанки нумеруются в декартовой системе координат, начиная с чанка (0,0).
 
@@ -26,6 +26,7 @@
 
 
 import os
+import sys
 from math import radians, sin, cos, sqrt, atan2
 
 DIFF = 0.000001
@@ -127,7 +128,7 @@ def distance(lat1:float, lon1:float, lat2:float, lon2:float) -> float:
     return float(round(res, 2))
 
 
-def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: str, output: str) -> int:
+def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: str, output: str, on_grid: list=[], id_plus: int=0) -> int:
 
     new_edges_num = int(0)
     current_node_number = get_max_node_num(source) + 1
@@ -146,14 +147,13 @@ def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: 
                 destination_file.write(line)
                 
             elif len(numbers) == 3:
-                pass
-                destination_file.write(line)
+                destination_file.write(line) # TODO: add id_plus to node_id
                 
             elif len(numbers) == 6:
                 new_nodes = set() # Node: (latitude, longtitude)
                 
-                start_node_num = int(numbers[0])
-                end_node_num = int(numbers[1])
+                start_node_num = int(numbers[0]) + id_plus
+                end_node_num = int(numbers[1]) + id_plus
                        
                 end_node_inf = all_lines[end_node_num + 9].split()
                 end_node_lat = float(end_node_inf[1])
@@ -190,7 +190,7 @@ def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: 
 
 
                 if len(new_nodes) == 0:
-                    destination_file.write(line)
+                    destination_file.write(line) # TODO: add id_plus to nodes'es id's
                 else:
                     new_nodes.add((start_node_lat, start_node_long))
                     new_nodes.add((end_node_lat, end_node_long))
@@ -201,19 +201,50 @@ def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: 
                         current_edge_line = []
                         
                         if edge_ind == 0:
-                            current_edge_line.append(str(start_node_num))
-                            current_edge_line.append(str(current_node_number))
 
-                            nd = str(current_node_number) + " " + str(new_nodes[edge_ind + 1][0]) + " " + str(new_nodes[edge_ind + 1][1]) + "\n"
+                            change = False
+                            right = int(-1)
+                            
+                            for itm in range(len(on_grid)):
+                                if (on_grid[itm][1] == new_nodes[edge_ind + 1][0] and
+                                        on_grid[itm][2] == new_nodes[edge_ind + 1][1]):
+                                            change = True
+                                            right = on_grid[0]
+                                
+
+                            current_edge_line.append(str(start_node_num))
+                            if (change):
+                                current_edge_line.append(str(right))
+                                nd = str(right) + " " + str(new_nodes[edge_ind + 1][0]) + " " + str(new_nodes[edge_ind + 1][1]) + "\n"
+                            else:
+                                current_edge_line.append(str(current_node_number))
+                                nd = str(current_node_number) + " " + str(new_nodes[edge_ind + 1][0]) + " " + str(new_nodes[edge_ind + 1][1]) + "\n"
+                            
                             nodes_to_tmp.add(nd)
                             
                 
                         elif edge_ind == (len(new_nodes) - 2):
-                            current_edge_line.append(str(current_node_number - 1))
+
+                            change = False
+                            right = int(-1)
+                            
+                            for itm in range(len(on_grid)):
+                                if (on_grid[itm][1] == new_nodes[edge_ind + 1][0] and
+                                        on_grid[itm][2] == new_nodes[edge_ind + 1][1]):
+                                            change = True
+                                            right = on_grid[0]
+
+                            if (change):
+                                current_edge_line.append(str(right))
+                            else:
+                                current_edge_line.append(str(current_node_number - 1))
                             current_edge_line.append(str(end_node_num))
 
                             
                         else:
+
+                            # TODO: check nodes for being in on_edge[]
+                            
                             current_edge_line.append(str(current_node_number - 1))
                             current_edge_line.append(str(current_node_number))
 
@@ -249,8 +280,98 @@ def break_intersected_edges(horizontal_grid: list, vertical_grid: list, source: 
     return len(nodes_to_tmp)
                         
 
-def get_chunk(chunk_size: float, grid_x: int, grid_y: int, source: str, folder_name: str):
+def get_chunk(chunk_size: float, grid_x: int, grid_y: int, source: str, folder_name: str, base_point_lat=None, base_point_long=None):
 
+    with open(source, 'r') as source_file, open(vertices_file_path, 'w') as verts, open(edges_file_path, 'w') as edgs:
+        if (base_point_lat != None and base_point_long != None):
+            grid_x = int(grid_x)
+            grid_y = int(grid_y)
+            number_of_selected_edges = int(0)
+
+            vertices_filename = f'V_{grid_x}_{grid_y}.txt'
+            edges_filename = f'E_{grid_x}_{grid_y}.txt'
+
+            vertices_file_path = os.path.join(folder_name, vertices_filename)
+            edges_file_path = os.path.join(folder_name, edges_filename)
+
+            # Получим границы чанка
+            gor_grid_1 = base_point_lat + grid_y * chunk_size
+            gor_grid_2 = gor_grid_1 + chunk_size
+        
+            vert_grid_1 = base_point + grid_x * chunk_size
+            vert_grid_2 = vert_grid_1 + chunk_size
+
+
+            number_of_selected_edges = int(0)
+            selected_nodes = set()
+
+            for i, line in enumerate(source_file):
+                numbers = line.split()
+            
+                if i >= 9:
+                    # Получим все вершины, входящие в чанк
+                    if len(numbers) == 3:
+                        lat = float(numbers[1])
+                        long = float(numbers[2])
+                        node_number = int(numbers[0])
+                
+                        if (lat >= gor_grid_1
+                            and lat <= gor_grid_2
+                            and long >= vert_grid_1
+                            and long <= vert_grid_2):
+
+                            selected_nodes.add(node_number)
+
+                            new_line = []
+                            for i in range(3):
+                                new_line.append(str(numbers[i]))
+
+                            new_line.append(str(grid_x))
+                            new_line.append(str(grid_y))
+                        
+                            if (abs(lat - gor_grid_1) < DIFF):
+                                new_line.append(str(grid_x))
+                                new_line.append(str(grid_y - 1))
+                            if (abs(lat - gor_grid_2) < DIFF):
+                                new_line.append(str(grid_x))
+                                new_line.append(str(grid_y + 1))
+                            if (abs(long - vert_grid_1) < DIFF):
+                                new_line.append(str(grid_x - 1))
+                                new_line.append(str(grid_y))
+                            if (abs(long - vert_grid_2) < DIFF):
+                                new_line.append(str(grid_x + 1))
+                                new_line.append(str(grid_y))
+                            
+                        
+                            verts.write(" ".join(new_line) + str("\n"))
+
+                
+                            
+                        
+                    # Получим все дуги, входящие в чанк
+                    elif len(numbers) == 6:
+                        start_node = int(numbers[0])
+                        end_node = int(numbers[1])
+
+                        if (start_node in selected_nodes) and (end_node in selected_nodes):
+                        
+                            new_line = []
+                            new_line.append(str(start_node))
+                            new_line.append(str(end_node))
+                            new_line.append( str(round(float(numbers[2]) / (float(numbers[4]) / 3.6), 4)) )
+                            edgs.write(" ".join(new_line) + str("\n"))
+                        
+                            if (int(numbers[5]) == 1):
+                                new_line[0], new_line[1] = new_line[1], new_line[0]
+                                edgs.write(" ".join(new_line) + str("\n"))
+                                number_of_selected_edges += 1
+                        
+                            number_of_selected_edges += 1
+
+            return 
+
+        
+    
     grid_x = int(grid_x)
     grid_y = int(grid_y)
     number_of_selected_edges = int(0)
@@ -383,14 +504,41 @@ def get_chunk(chunk_size: float, grid_x: int, grid_y: int, source: str, folder_n
         
 if __name__ == "__main__":
 
-    CHUNK_SIZE = 0.1
-    
-    os.makedirs('chunks', exist_ok=True)
+    # Ручное использование скрипта для разбиения на чанки, указанного размера, графа SOURCE_FILE
+    if (len(sys.argv) == 1):
+        CHUNK_SIZE = 0.1
+        
+        os.makedirs('chunks', exist_ok=True)
 
-    hor_grid, vert_grid, lat_chunks_for_side, long_chunks_for_side = create_grid(CHUNK_SIZE, SOURCE_FILE)
-    
-    break_intersected_edges(hor_grid, vert_grid, SOURCE_FILE, 'tmp.txt')
+        hor_grid, vert_grid, lat_chunks_for_side, long_chunks_for_side = create_grid(CHUNK_SIZE, SOURCE_FILE)
+        
+        break_intersected_edges(hor_grid, vert_grid, SOURCE_FILE, 'tmp.txt')
 
-    for i in range(long_chunks_for_side):
-        for j in range(lat_chunks_for_side):
-            get_chunk(CHUNK_SIZE, i, j, 'tmp.txt', 'chunks')
+        for i in range(long_chunks_for_side):
+            for j in range(lat_chunks_for_side):
+                get_chunk(CHUNK_SIZE, i, j, 'tmp.txt', 'chunks')
+
+    # Серверное использование скрипта с полученными параметрами:
+    # grid_x, grid_y, base_point_lat, base_point_long, chunk_size, max_node_id
+    elif (len(sys.argv) == 7):
+        
+        grid_x = int(sys.argv[1])
+        grid_y = int(sys.argv[2])
+        base_point_lat = float(sys.argv[3])
+        base_point_long = float(sys.argv[4])
+        chunk_size = float(sys.argv[5])
+        max_node_id = int(sys.argv[6])
+
+        # Получим границы чанка
+        gor_grid_1 = base_point_lat + grid_y * chunk_size
+        gor_grid_2 = gor_grid_1 + chunk_size
+        
+        vert_grid_1 = base_point + grid_x * chunk_size
+        vert_grid_2 = vert_grid_1 + chunk_size
+
+        hor_grid = [gor_grid_1, gor_grid_2]
+        vert_grid = [vert_grid_1, vert_grid_2]
+
+        break_intersected_edges(hor_grid, vert_grid, 'ma.pypgn', 'tmp.txt', on_grid, max_node_id)
+        get_chunk(chunk_size, grid_x, grid_y, 'tmp.txt', 'chunk', base_point_lat, base_point_long)
+        
