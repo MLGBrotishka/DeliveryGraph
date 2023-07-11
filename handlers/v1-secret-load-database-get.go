@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"graph/database"
 	"graph/lstruct"
 	"net/http"
@@ -17,7 +18,7 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
-	if request.Message != "clear" && request.Message != "load" && request.Message != "load" {
+	if request.Message != "clear" && request.Message != "online" && request.Message != "load" {
 		errorResponse := lstruct.ErrorResponse{
 			Message: "Wrong message",
 		}
@@ -42,5 +43,15 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusOK, response)
 		return
 	}
-
+	if request.Message == "online" {
+		var vertices lstruct.Vertices
+		database.GetVerticesRedis(100, 100, &vertices)
+		fmt.Println(vertices)
+		//online.FindCollisions(1, 1)
+		response := lstruct.ErrorResponse{
+			Message: "Example loaded successfully",
+		}
+		SendJSONResponse(w, http.StatusOK, response)
+		return
+	}
 }

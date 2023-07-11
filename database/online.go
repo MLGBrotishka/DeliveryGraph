@@ -63,16 +63,20 @@ func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk 
 	fmt.Println("Файл успешно скачан и сохранен.")
 
 	// Первый скрипт
-	directory := "OSM"
 
 	pythonKey := "-f"
 	pythonFile := "run.py"
-	openmapFile := "..\\map"
+	openmapFile := "..\\..\\map"
 
 	pythonInterpreter := "python"
 
 	pythonArgs := []string{pythonFile, pythonKey, openmapFile}
-
+	directory := "online"
+	err = os.Chdir(directory)
+	if err != nil {
+		log.Fatal(err)
+	}
+	directory = "osm"
 	err = os.Chdir(directory)
 	if err != nil {
 		log.Fatal(err)
@@ -138,7 +142,10 @@ func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk 
 	if err != nil {
 		return err
 	}
-
+	err = os.Chdir("..")
+	if err != nil {
+		return err
+	}
 	// Удаление файла
 	err = os.Remove("map")
 	if err != nil {

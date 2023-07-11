@@ -139,9 +139,9 @@ func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
 	if len(result) == 0 {
 		return errors.New("key not found")
 	}
-	flag := false
+	flag := true
 	for k, v := range result {
-		flag = true
+		flag = false
 		keyInt, err := strconv.Atoi(k)
 		if err != nil {
 			return err
@@ -154,8 +154,9 @@ func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
 
 		(*data)[keyInt] = vertex
 	}
-	if flag && Online {
+	if flag {
 		LoadChunkOnline(lstruct.Chunk{X: x, Y: y}, CenterPoint, ChunkSize.Lat, ChunkSize.Lon, Max_id)
+		fmt.Println("sdads")
 	}
 	return nil
 }
