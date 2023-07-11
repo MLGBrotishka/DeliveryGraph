@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	CenterPoint = lstruct.Coordinate{Lon: 37.11943929999999600, Lat: 55.49720759999999600}
-	ChunkSize   = lstruct.Coordinate{Lon: 0.10575940000000088, Lat: 0.21360920000000191}
+	CenterPoint = lstruct.Coordinate{Lon: 37.119, Lat: 55.497}
+	ChunkSize   = lstruct.Coordinate{Lon: 0.1, Lat: 0.1}
 )
 
 var client *redis.Client
@@ -23,7 +23,7 @@ var client *redis.Client
 func ConnectRedisDB() error {
 	// Создание клиента Redis
 	client = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379", // Адрес и порт Redis сервера
+		Addr:     "localhost:2001", // Адрес и порт Redis сервера
 		Password: "",               // Пароль (если требуется)
 		DB:       0,                // Индекс базы данных
 	})
@@ -135,7 +135,7 @@ func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
 	}
 
 	if len(result) == 0 {
-		return errors.New("Key not found")
+		return errors.New("key not found")
 	}
 
 	for k, v := range result {

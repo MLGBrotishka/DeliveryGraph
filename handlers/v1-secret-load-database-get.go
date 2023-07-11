@@ -34,7 +34,7 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if request.Message == "iamgay" {
-		database.LoadFromTextToRedis("./offline/chunks")
+		database.LoadFromTextToRedis("./database/offline/chunks")
 		response := lstruct.ErrorResponse{
 			Message: "Example loaded successfully",
 		}

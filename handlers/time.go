@@ -2,10 +2,15 @@ package handlers
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
 func GetTimeValue(inputTime string) float64 {
+	index := strings.Index(inputTime, " m=")
+	if index != -1 {
+		inputTime = inputTime[:index]
+	}
 	parsedTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", inputTime)
 	if err != nil {
 		fmt.Println("Ошибка разбора времени:", err)

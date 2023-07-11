@@ -119,12 +119,12 @@ func parseFileVertices(filename string) (lstruct.Vertices, error) {
 			return nil, err
 		}
 
-		x, err := strconv.ParseFloat(fields[1], 64)
+		x, err := strconv.ParseFloat(fields[2], 64)
 		if err != nil {
 			return nil, err
 		}
 
-		y, err := strconv.ParseFloat(fields[2], 64)
+		y, err := strconv.ParseFloat(fields[1], 64)
 		if err != nil {
 			return nil, err
 		}
