@@ -17,7 +17,7 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusBadRequest, errorResponse)
 		return
 	}
-	if request.Message != "iamgay" && request.Message != "iamgayestgay" {
+	if request.Message != "clear" && request.Message != "load" && request.Message != "load" {
 		errorResponse := lstruct.ErrorResponse{
 			Message: "Wrong message",
 		}
@@ -25,7 +25,7 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Создание и отправка ответа
-	if request.Message == "iamgayestgay" {
+	if request.Message == "clear" {
 		database.EraseAllTablesRedis()
 		response := lstruct.ErrorResponse{
 			Message: "All tables cleared successfully",
@@ -33,7 +33,7 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 		SendJSONResponse(w, http.StatusOK, response)
 		return
 	}
-	if request.Message == "iamgay" {
+	if request.Message == "load" {
 		database.LoadFromTextToRedis("./database/offline/chunks")
 		//online.FindCollisions(1, 1)
 		response := lstruct.ErrorResponse{

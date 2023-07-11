@@ -1,18 +1,17 @@
-package online
+package database
 
 import (
 	"fmt"
-	"graph/database"
 	"graph/lstruct"
 	"os"
 )
 
 func FindCollisions(x int, y int) error {
 	var vertices lstruct.Vertices
-	database.GetVerticesRedis(x+1, y, &vertices)
-	database.GetVerticesRedis(x, y+1, &vertices)
-	database.GetVerticesRedis(x-1, y, &vertices)
-	database.GetVerticesRedis(x, y-1, &vertices)
+	GetVerticesRedis(x+1, y, &vertices)
+	GetVerticesRedis(x, y+1, &vertices)
+	GetVerticesRedis(x-1, y, &vertices)
+	GetVerticesRedis(x, y-1, &vertices)
 	curChunk := lstruct.Chunk{X: x, Y: y}
 	file, err := os.Create("./database/online/osm/ongrid.txt")
 

@@ -1,8 +1,7 @@
-package online
+package database
 
 import (
 	"fmt"
-	"graph/database"
 	"graph/lstruct"
 	"io"
 	"log"
@@ -91,7 +90,8 @@ func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk 
 	}
 
 	fmt.Println("Программа 1 на Python успешно выполнена.")
-
+	// Егор
+	FindCollisions(chunk.X, chunk.Y)
 	//Второй скрипт
 
 	pythonArgs = []string{"script.py", "chunk.x", "chunk.y", "point.Lon", "point.Lat", "width_chunk", "max_id"} //аргументы для второго скрипта
@@ -112,7 +112,7 @@ func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk 
 	//Скрипт Егора
 
 	path := "./database/online/osm/chunks"
-	err = database.LoadFromTextToRedis(path)
+	err = LoadFromTextToRedis(path)
 	if err != nil {
 		return err
 	}

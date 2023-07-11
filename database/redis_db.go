@@ -16,6 +16,8 @@ import (
 var (
 	CenterPoint = lstruct.Coordinate{Lon: 37.119, Lat: 55.497}
 	ChunkSize   = lstruct.Coordinate{Lon: 0.1, Lat: 0.1}
+	Online      = true
+	Max_id      = 2031541
 )
 
 var client *redis.Client
@@ -133,11 +135,13 @@ func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
 	if err != nil {
 		return err
 	}
+
 	if len(result) == 0 {
 		return errors.New("key not found")
 	}
-
+	flag := false
 	for k, v := range result {
+		flag = true
 		keyInt, err := strconv.Atoi(k)
 		if err != nil {
 			return err
@@ -150,7 +154,9 @@ func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
 
 		(*data)[keyInt] = vertex
 	}
-
+	if flag && Online {
+		LoadChunkOnline(lstruct.Chunk{X: x, Y: y}, CenterPoint, ChunkSize.Lat, ChunkSize.Lon, Max_id)
+	}
 	return nil
 }
 
