@@ -1,14 +1,15 @@
-package main
+package online
 
 import (
 	"fmt"
+	"graph/database"
+	"graph/lstruct"
 	"io"
+	"log"
 	"net/http"
 	"os"
-	"strings"
-	"log"
 	"os/exec"
-	
+	"strings"
 )
 
 func createURL(bbox []float64) string {
@@ -24,70 +25,62 @@ func createURL(bbox []float64) string {
 	return url
 }
 
-func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk float64, height_chunk float64, max_id int)  {
+func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk float64, height_chunk float64, max_id int) error {
 	var xmin, xmax, ymin, ymax float64
-	var epsilon  float64
+	var epsilon float64
 	epsilon = 0.0001
-	xmin=point.Lon + width_chunk * float64(chunk.X)-epsilon
-	xmax=point.Lon + width_chunk * float64(chunk.X+1 )+epsilon
-	ymin=point.Lat + height_chunk * float64(chunk.Y) -epsilon
-	ymax=point.Lat + height_chunk * float64(chunk.Y+1)+epsilon                                          
+	xmin = point.Lon + width_chunk*float64(chunk.X) - epsilon
+	xmax = point.Lon + width_chunk*float64(chunk.X+1) + epsilon
+	ymin = point.Lat + height_chunk*float64(chunk.Y) - epsilon
+	ymax = point.Lat + height_chunk*float64(chunk.Y+1) + epsilon
 	bbox := []float64{xmin, xmax, ymin, ymax}
 	fileURL := createURL(bbox)
-//качает файл по ссылке
+	//качает файл по ссылке
 	resp, err := http.Get(fileURL)
 	if err != nil {
 		fmt.Printf("Ошибка при отправке GET-запроса: %v\n", err)
-		return
+		return err
 	}
 	//defer resp.Body.Close()
 
-	
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Ошибка при получении файла. Код состояния: %v\n", resp.StatusCode)
-		return
+		return err
 	}
 
-	
-	file, err := os.Create("map") 
+	file, err := os.Create("map")
 	if err != nil {
 		fmt.Printf("Ошибка при создании файла: %v\n", err)
-		return
+		return err
 	}
 	//defer file.Close()
 
-	
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
 		fmt.Printf("Ошибка при записи данных в файл: %v\n", err)
-		return
+		return err
 	}
 
 	fmt.Println("Файл успешно скачан и сохранен.")
 
-// Первый скрипт
+	// Первый скрипт
 	directory := "OSM"
 
-	
 	pythonKey := "-f"
 	pythonFile := "run.py"
 	openmapFile := "..\\map"
-	
+
 	pythonInterpreter := "python"
 
-	
-	pythonArgs := []string{pythonFile, pythonKey,  openmapFile}
+	pythonArgs := []string{pythonFile, pythonKey, openmapFile}
 
-	
 	err = os.Chdir(directory)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	
 	cmdPython := exec.Command(pythonInterpreter, pythonArgs...)
 
-	
 	cmdPython.Stdin = os.Stdin
 	cmdPython.Stdout = os.Stdout
 	cmdPython.Stderr = os.Stderr
@@ -99,110 +92,57 @@ func LoadChunkOnline(chunk lstruct.Chunk, point lstruct.Coordinate, width_chunk 
 
 	fmt.Println("Программа 1 на Python успешно выполнена.")
 
+	//Второй скрипт
 
+	pythonArgs = []string{"script.py", "chunk.x", "chunk.y", "point.Lon", "point.Lat", "width_chunk", "max_id"} //аргументы для второго скрипта
 
-
-//Второй скрипт
-
-	pythonArgs = []string{"script.py", "chunk.x", "chunk.y", "point.Lon", "point.Lat", "width_chunk", "max_id"}//аргументы для второго скрипта
-
-	
 	cmdPython = exec.Command(pythonInterpreter, pythonArgs...)
 
-	
 	cmdPython.Stdin = os.Stdin
 	cmdPython.Stdout = os.Stdout
 	cmdPython.Stderr = os.Stderr
 
-	
-	err = cmdPython.Run()//python script.py chunk.x chunk.y point.Lon point.Lat width_chunk max_id
+	err = cmdPython.Run() //python script.py chunk.x chunk.y point.Lon point.Lat width_chunk max_id
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Программа 2  на Python успешно выполнена.")
 
-//Скрипт Егора
+	//Скрипт Егора
 
-path := "./chunks" 
-err = database.LoadFromTextToRedis(path)
-if err != nil {
-    fmt.Println(err)
- }
-// Удаление файлов
-err := os.Remove("..pypgr")
-if err != nil {
-	return err
+	path := "./database/online/osm/chunks"
+	err = database.LoadFromTextToRedis(path)
+	if err != nil {
+		return err
+	}
+	// Удаление файлов
+	err = os.Remove("..pypgr")
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove("..pypgr_names")
+	if err != nil {
+		return err
+	}
+
+	// Удаление папки
+	err = os.RemoveAll("chunks")
+	if err != nil {
+		return err
+	}
+
+	// Переход на папку выше
+	err = os.Chdir("..")
+	if err != nil {
+		return err
+	}
+
+	// Удаление файла
+	err = os.Remove("map")
+	if err != nil {
+		return err
+	}
+	return nil
 }
-
-err = os.Remove("..pypgr_names")
-if err != nil {
-	return err
-}
-
-// Удаление папки 
-err = os.RemoveAll("chunks")
-if err != nil {
-	return err
-}
-
-// Переход на папку выше
-err = os.Chdir("..")
-if err != nil {
-	return err
-}
-
-// Удаление файла
-err = os.Remove("map")
-if err != nil {
-	return err
-}
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-	
-	
-

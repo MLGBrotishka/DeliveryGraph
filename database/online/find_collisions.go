@@ -1,4 +1,4 @@
-package database
+package online
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ func FindCollisions(x int, y int) error {
 	database.GetVerticesRedis(x-1, y, &vertices)
 	database.GetVerticesRedis(x, y-1, &vertices)
 	curChunk := lstruct.Chunk{X: x, Y: y}
-	file, err := os.Create("ongrid.txt")
+	file, err := os.Create("./database/online/osm/ongrid.txt")
 
 	for id := range vertices {
 		vertex := vertices[id]

@@ -37,13 +37,13 @@ func GetV2Path(w http.ResponseWriter, r *http.Request) {
 	if t_err != nil {
 		ord_time = time.Now().String()
 	}
-	cost = float64(cost * GetTimeValue(ord_time) * OkladPerHour(cost) / 3600)
+	rub := cost * GetTimeValue(ord_time) * OkladPerHour(cost) / 3600
 	if path != nil {
 		response := lstruct.PathInfoResponse{
 			CourierID: pathRequest.Courier.ID,
 			Path:      path,
 			Time:      int(cost),
-			Cost:      cost,
+			Cost:      rub,
 		}
 		SendJSONResponse(w, http.StatusOK, response)
 	} else {

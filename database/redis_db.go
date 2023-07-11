@@ -23,7 +23,7 @@ var client *redis.Client
 func ConnectRedisDB() error {
 	// Создание клиента Redis
 	client = redis.NewClient(&redis.Options{
-		Addr:     "localhost:2000", // Адрес и порт Redis сервера
+		Addr:     "localhost:6379", // Адрес и порт Redis сервера
 		Password: "",               // Пароль (если требуется)
 		DB:       0,                // Индекс базы данных
 	})
@@ -133,7 +133,6 @@ func GetVerticesRedis(x int, y int, data *lstruct.Vertices) error {
 	if err != nil {
 		return err
 	}
-
 	if len(result) == 0 {
 		return errors.New("key not found")
 	}

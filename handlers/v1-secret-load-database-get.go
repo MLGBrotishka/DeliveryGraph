@@ -35,7 +35,7 @@ func GetV1SecretLoadDatabase(w http.ResponseWriter, r *http.Request) {
 	}
 	if request.Message == "iamgay" {
 		database.LoadFromTextToRedis("./database/offline/chunks")
-		database.FindCollisions()
+		//online.FindCollisions(1, 1)
 		response := lstruct.ErrorResponse{
 			Message: "Example loaded successfully",
 		}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"graph/database"
 	"graph/lstruct"
 	"log"
@@ -30,7 +31,7 @@ func AStar(vertices *lstruct.Vertices, edges *lstruct.Edges, startID int, goalID
 		fScore[id] = math.Inf(1)
 	}
 	gScore[startID] = 0
-	fScore[startID] = 100 * heuristicCost((*vertices)[startID].X, (*vertices)[startID].Y, (*vertices)[goalID].X, (*vertices)[goalID].Y)
+	fScore[startID] = heuristicCost((*vertices)[startID].X, (*vertices)[startID].Y, (*vertices)[goalID].X, (*vertices)[goalID].Y)
 
 	openSet[startID] = true
 
@@ -53,6 +54,7 @@ func AStar(vertices *lstruct.Vertices, edges *lstruct.Edges, startID int, goalID
 					database.GetVerticesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, vertices)
 					database.GetEdgesRedis((*vertices)[neighbor].Chunks[i].X, (*vertices)[neighbor].Chunks[i].Y, edges)
 					(*chunks)[(*vertices)[neighbor].Chunks[i]] = true
+					fmt.Println((*vertices)[neighbor].Chunks[i])
 				}
 			}
 
@@ -76,9 +78,9 @@ func AStar(vertices *lstruct.Vertices, edges *lstruct.Edges, startID int, goalID
 }
 
 func heuristicCost(aX float64, aY float64, bX float64, bY float64) float64 {
-	dx := aX - bX
-	dy := aY - bY
-	return math.Sqrt(dx*dx + dy*dy)
+	dx := (aX - bX) * 300
+	dy := (aY - bY) * 300
+	return dx*dx + dy*dy
 }
 
 func getLowestFScore(openSet *map[int]bool, fScore map[int]float64, gScore map[int]float64, max float64) int {
@@ -159,6 +161,7 @@ func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vert
 			(*chunks)[chunksArr[i]] = true
 		}
 	}
+	fmt.Println(chunksArr)
 	chunksArr = FindChunk(b.Lon, b.Lat)
 	for i := 0; i < len(chunksArr); i++ {
 		_, ok := (*chunks)[chunksArr[i]]
@@ -168,7 +171,7 @@ func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vert
 			(*chunks)[chunksArr[i]] = true
 		}
 	}
-
+	fmt.Println(chunksArr)
 	startID := findPoint(a.Lon, a.Lat, vertices)
 	goalID := findPoint(b.Lon, b.Lat, vertices)
 	path, cost := AStar(vertices, edges, startID, goalID, -1.0, chunks)
