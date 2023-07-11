@@ -144,11 +144,6 @@ func FindChunk(pointX float64, pointY float64) []lstruct.Chunk {
 
 func findPath(a lstruct.Coordinate, b lstruct.Coordinate, vertices *lstruct.Vertices, edges *lstruct.Edges, chunks *map[lstruct.Chunk]bool) ([]lstruct.Coordinate, float64) {
 	chunksArr := FindChunk(a.Lon, a.Lat)
-	for i := 0; i < 10; i++ {
-		for j := 0; j < 5; j++ {
-			chunksArr = append([]lstruct.Chunk{{X: i, Y: j}}, chunksArr...)
-		}
-	}
 	for i := 0; i < len(chunksArr); i++ {
 		_, ok := (*chunks)[chunksArr[i]]
 		if !ok {
