@@ -57,7 +57,14 @@ func AStar(vertices *lstruct.Vertices, edges *lstruct.Edges, startID int, goalID
 			}
 
 			tentativeGScore := gScore[current] + (*edges)[current][neighbor]
-			if tentativeGScore < gScore[neighbor] {
+			var ok1 bool
+			_, ok1 = gScore[neighbor]
+			if !ok1 {
+				cameFrom[neighbor] = current
+				gScore[neighbor] = tentativeGScore
+				fScore[neighbor] = gScore[neighbor] + heuristicCost((*vertices)[neighbor].X, (*vertices)[neighbor].Y, (*vertices)[goalID].X, (*vertices)[goalID].Y)
+				openSet[neighbor] = true
+			} else if tentativeGScore < gScore[neighbor] {
 				cameFrom[neighbor] = current
 				gScore[neighbor] = tentativeGScore
 				fScore[neighbor] = gScore[neighbor] + heuristicCost((*vertices)[neighbor].X, (*vertices)[neighbor].Y, (*vertices)[goalID].X, (*vertices)[goalID].Y)
