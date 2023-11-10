@@ -11,8 +11,6 @@
 
 `go run main.go`
 
-![Дорожная карта проекта](https://github.com/orgs/mai-806/projects/6/views/6)
-
 ---
 ### Алгоритмы
 
